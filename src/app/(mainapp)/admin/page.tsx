@@ -30,7 +30,7 @@ export default async function AdminPage() {
 
   return (
     <main className="min-h-screen">
-      <div className="container mx-auto mt-10 p-6 bg-white rounded-lg shadow-sm">
+      <div className="container mx-auto mt-10 p-6 rounded-lg shadow-sm">
         <h1 className="text-2xl font-bold mb-6 text-gray-800">Admin Dashboard (Konfirmasi Jadwal)</h1>
 
         <div className="rounded-md border">
@@ -42,7 +42,7 @@ export default async function AdminPage() {
                 <TableHead>Jadwal Request</TableHead>
                 <TableHead>Keluhan</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
+                <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

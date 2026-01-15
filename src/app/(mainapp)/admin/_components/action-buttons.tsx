@@ -29,11 +29,11 @@ export const ActionButtons = ({ appointmentId, status }: ActionButtosProps) => {
   };
 
   if (status === "COMPLETED" || status === "CANCELLED") {
-    return <span className="text-sm">-</span>;
+    return <p className="text-sm text-center">-</p>;
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex justify-center gap-2">
       {status === "PENDING" && (
         <Button size="sm" onClick={() => handleUpdate("SCHEDULED")} disabled={loading}>
           {loading ? "..." : "Terima"}
@@ -53,9 +53,7 @@ export const ActionButtons = ({ appointmentId, status }: ActionButtosProps) => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleUpdate("CANCELLED")} className="bg-red-600 hover:bg-red-700">
-              Ya, Batalkan
-            </AlertDialogAction>
+            <AlertDialogAction onClick={() => handleUpdate("CANCELLED")}>Ya, Batalkan</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
