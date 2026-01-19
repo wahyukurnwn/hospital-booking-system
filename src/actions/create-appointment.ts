@@ -5,6 +5,11 @@ import { BookingSchema, bookingSchema } from "@/features/appointment/schemas/boo
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+import { AppointmentEmail } from "@/components/emails/appointment-email";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { resend } from "@/lib/email";
+
 export default async function createAppointmentAction(data: BookingSchema) {
   const session = await auth();
 
@@ -83,7 +88,29 @@ export default async function createAppointmentAction(data: BookingSchema) {
       });
     });
 
-    revalidatePath("/");
+    if (session?.user?.email) {
+      const formattedDate = format(new Date(date), "EEEE, d MMMM yyyy", { locale: id });
+
+      const doctorData = await prisma.doctor.findUnique({
+        where: { id: doctorId },
+        select: { name: true },
+      });
+
+      await resend.emails.send({
+        from: "Klinik Sehat <onboarding@resend.dev>", // Pakai domain default Resend dulu
+        to: session.user.email, // Kirim ke email user yang login
+        subject: "Permintaan Booking Diterima",
+        react: AppointmentEmail({
+          patientName: session.user.name || "Pasien",
+          doctorName: doctorData?.name || "Dokter",
+          date: formattedDate,
+          time: time,
+          type: "CREATED",
+        }),
+      });
+    }
+
+    revalidatePath("/dashboard");
     return { status: true, message: "Booking Berhasil!" };
   } catch (error: any) {
     return {

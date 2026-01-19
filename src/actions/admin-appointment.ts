@@ -5,6 +5,11 @@ import { AppointmentStatus } from "@/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+import { AppointmentEmail } from "@/components/emails/appointment-email";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { resend } from "@/lib/email";
+
 export default async function updateAppointmentStatus(appointmenId: string, newStatus: AppointmentStatus, cancellationResaon?: string) {
   const session = await auth();
 
@@ -13,7 +18,7 @@ export default async function updateAppointmentStatus(appointmenId: string, newS
   }
 
   try {
-    await prisma.appointment.update({
+    const updatedAppointment = await prisma.appointment.update({
       where: {
         id: appointmenId,
       },
@@ -21,7 +26,29 @@ export default async function updateAppointmentStatus(appointmenId: string, newS
         status: newStatus,
         cancellationReason: cancellationResaon || null,
       },
+      include: {
+        patient: true,
+        doctor: true,
+      },
     });
+
+    if (newStatus === "SCHEDULED" && updatedAppointment.patient.email) {
+      const formattedDate = format(updatedAppointment.schedule, "EEEE, d MMMM yyyy", { locale: id });
+      const formattedTime = format(updatedAppointment.schedule, "HH:mm");
+
+      await resend.emails.send({
+        from: "Klinik Sehat <onboarding@resend.dev>",
+        to: updatedAppointment.patient.email, // Kirim ke email pasien
+        subject: "Jadwal Dokter Terkonfirmasi ✅",
+        react: AppointmentEmail({
+          patientName: updatedAppointment.patient.name,
+          doctorName: updatedAppointment.doctor.name,
+          date: formattedDate,
+          time: formattedTime,
+          type: "CONFIRMATION",
+        }),
+      });
+    }
 
     revalidatePath("/admin");
     revalidatePath("/dashboard");
