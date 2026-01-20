@@ -114,10 +114,12 @@ export default async function DashboardPage() {
 
                   {/* Jika status SCHEDULED, tampilkan nomor antrean (jika ada) */}
                   {apt.status === "SCHEDULED" && (
-                    <div className="mt-4 bg-green-50 p-3 rounded-md border border-green-100 flex justify-between items-center">
-                      <span className="text-sm text-green-800 font-medium">Jadwal Terkonfirmasi!</span>
-                      {/* Implementasi nomor antrean */}
-                      {/* <span className="font-bold text-green-900">Antrean: #{apt.queueNumber}</span> */}
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md flex items-start gap-3">
+                      <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-blue-500">Estimasi Waktu Tunggu</p>
+                        <p className="text-xs text-blue-600 mt-1">Mohon datang 15 menit sebelum jadwal ({format(apt.schedule, "HH:mm")}). Rata-rata durasi konsultasi adalah 20 menit per pasien.</p>
+                      </div>
                     </div>
                   )}
                 </CardContent>
