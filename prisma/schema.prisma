@@ -175,6 +175,8 @@ model Appointment {
   reason String  @db.Text
   note   String? @db.Text
 
+  attachmentUrl String?
+
   queueNumber Int?
 
   cancellationReason String?

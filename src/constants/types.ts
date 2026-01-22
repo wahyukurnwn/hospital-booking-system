@@ -8,4 +8,5 @@ export enum FieldType {
   DATE = "datepicker",
   TEXTAREA = "textarea",
   SLOT = "slot",
+  FILE = "file",
 }

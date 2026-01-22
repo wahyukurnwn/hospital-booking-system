@@ -1,14 +1,15 @@
 "use client";
 
+import { Control, Controller, FieldValues, Path, ControllerRenderProps, ControllerFieldState } from "react-hook-form";
 import { FieldType } from "@/constants/types";
 
 import { TextInput } from "./inputs/text-input";
-import { SelectInput } from "./inputs/select-input";
 import { TextareaInput } from "./inputs/textarea-input";
-import { RadioInput } from "./inputs/radio-group-input";
 import { DatePickerInput } from "./inputs/datepicker-input";
-import { Control, Controller } from "react-hook-form";
 import { SlotPickerInput } from "./inputs/slot-picker-input";
+import { FileUploadInput } from "./inputs/file-upload";
+import { SelectInput } from "./inputs/select-input";
+import { RadioInput } from "./inputs/radio-group-input";
 import { TimeSlot } from "@/features/appointment/hooks/use-booking-slots";
 
 interface Option {
@@ -16,28 +17,35 @@ interface Option {
   value: string;
 }
 
-interface CustomControllerProps {
-  control: Control<any>;
-  name: string;
+interface BaseProps {
   label?: string;
-  fieldType: FieldType;
   placeholder?: string;
   disabled?: boolean;
-  options?: any[];
 }
 
-export const CustomController = (props: CustomControllerProps) => {
-  const { control, name, fieldType, ...otherProps } = props;
+interface CustomControllerProps<T extends FieldValues> extends BaseProps {
+  control: Control<T>;
+  name: Path<T>;
+  fieldType: FieldType;
+  options?: Option[] | TimeSlot[];
+}
 
+function assertNever(x: never): never {
+  throw new Error(`Unhandled field type: ${x}`);
+}
+
+export function CustomController<T extends FieldValues>({ control, name, fieldType, ...props }: CustomControllerProps<T>) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => {
-        const inputProps = {
+        const common = {
           field,
           fieldState,
-          ...otherProps,
+          label: props.label,
+          placeholder: props.placeholder,
+          disabled: props.disabled,
         };
 
         switch (fieldType) {
@@ -45,27 +53,30 @@ export const CustomController = (props: CustomControllerProps) => {
           case FieldType.EMAIL:
           case FieldType.PASSWORD:
           case FieldType.PHONE:
-            return <TextInput {...inputProps} type={fieldType} />;
+            return <TextInput {...common} type={fieldType} />;
 
           case FieldType.TEXTAREA:
-            return <TextareaInput {...inputProps} />;
+            return <TextareaInput {...common} />;
 
           case FieldType.SELECT:
-            return <SelectInput {...inputProps} />;
+            return <SelectInput {...common} options={props.options as Option[]} />;
 
           case FieldType.RADIO:
-            return <RadioInput {...inputProps} />;
+            return <RadioInput {...common} options={props.options as Option[]} />;
 
           case FieldType.DATE:
-            return <DatePickerInput {...inputProps} />;
+            return <DatePickerInput {...common} />;
 
           case FieldType.SLOT:
-            return <SlotPickerInput {...inputProps} options={otherProps.options as TimeSlot[]} />;
+            return <SlotPickerInput {...common} options={props.options as TimeSlot[]} />;
+
+          case FieldType.FILE:
+            return <FileUploadInput {...common} />;
 
           default:
-            return <></>;
+            return assertNever(fieldType);
         }
       }}
     />
   );
-};
+}

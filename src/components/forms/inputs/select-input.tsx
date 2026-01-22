@@ -2,33 +2,42 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { ControllerFieldState, ControllerRenderProps } from "react-hook-form";
+
+interface Option {
+  label: string;
+  value: string;
+}
 
 interface Props {
-  field: any;
-  fieldState: any;
+  field: ControllerRenderProps<any, any>;
+  fieldState: ControllerFieldState;
   label?: string;
   placeholder?: string;
-  options?: { label: string; value: string }[]; // Modular options
+  options?: Option[];
   disabled?: boolean;
 }
 
-export const SelectInput = ({ field, fieldState, label, placeholder, options, disabled }: Props) => {
+export function SelectInput({ field, fieldState, label, placeholder, options, disabled }: Props) {
   return (
     <Field>
       {label && <FieldLabel>{label}</FieldLabel>}
-      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled}>
+
+      <Select value={field.value} onValueChange={field.onChange} disabled={disabled}>
         <SelectTrigger>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
+
         <SelectContent>
-          {options?.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
+          {options?.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      {fieldState.error && <FieldError errors={[fieldState.error.message]} />}
+
+      {fieldState.error && <FieldError errors={[{ message: fieldState.error.message }]} />}
     </Field>
   );
-};
+}

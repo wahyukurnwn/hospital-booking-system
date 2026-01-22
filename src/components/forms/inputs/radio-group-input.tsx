@@ -3,30 +3,38 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { ControllerFieldState, ControllerRenderProps } from "react-hook-form";
+
+interface Option {
+  label: string;
+  value: string;
+}
 
 interface Props {
-  field: any;
-  fieldState: any;
+  field: ControllerRenderProps<any, any>;
+  fieldState: ControllerFieldState;
   label?: string;
-  options?: { label: string; value: string }[];
+  options?: Option[];
   disabled?: boolean;
 }
 
-export const RadioInput = ({ field, fieldState, label, options, disabled }: Props) => {
+export function RadioInput({ field, fieldState, label, options, disabled }: Props) {
   return (
     <Field>
       {label && <FieldLabel>{label}</FieldLabel>}
-      <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1" disabled={disabled}>
-        {options?.map((option) => (
-          <div key={option.value} className="flex items-center space-x-3 space-y-0">
-            <RadioGroupItem value={option.value} id={option.value} />
-            <Label htmlFor={option.value} className="font-normal cursor-pointer">
-              {option.label}
+
+      <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-col space-y-1" disabled={disabled}>
+        {options?.map((opt) => (
+          <div key={opt.value} className="flex items-center space-x-3">
+            <RadioGroupItem value={opt.value} id={opt.value} />
+            <Label htmlFor={opt.value} className="cursor-pointer">
+              {opt.label}
             </Label>
           </div>
         ))}
       </RadioGroup>
-      {fieldState.error && <FieldError errors={[fieldState.error.message]} />}
+
+      {fieldState.error && <FieldError errors={[{ message: fieldState.error.message }]} />}
     </Field>
   );
-};
+}

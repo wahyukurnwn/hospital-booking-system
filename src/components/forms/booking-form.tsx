@@ -1,21 +1,20 @@
 "use client";
 
-import { toast } from "sonner";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import createAppointmentAction from "@/actions/create-appointment";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 import { Doctor, DoctorSchedule } from "@/generated/prisma/client";
-import { useBookingSlots } from "@/features/appointment/hooks/use-booking-slots";
-import { CustomButton } from "../custom-btn";
-import { FieldGroup, FieldSet } from "../ui/field";
-import { bookingSchema, BookingSchema } from "@/features/appointment/schemas/booking.schema";
-import { CustomController } from "./custom-controller";
+import { CustomButton } from "@/components/custom-btn";
+import { FieldGroup, FieldSet } from "@/components/ui/field";
+
 import { FieldType } from "@/constants/types";
+import { bookingSchema, BookingSchema } from "@/features/appointment/schemas/booking.schema";
+import { useBookingSlots } from "@/features/appointment/hooks/use-booking-slots";
+import { createAppointmentAction } from "@/features/appointment/actions/create-appointment.action";
+import { CustomController } from "./custom-controller";
 
 interface BookingFormProps {
   doctor: Doctor & { schedules: DoctorSchedule[] };
@@ -30,9 +29,10 @@ export function BookingForm({ doctor, bookedSlots }: BookingFormProps) {
     resolver: zodResolver(bookingSchema),
     defaultValues: {
       doctorId: doctor.id,
-      reason: "",
       date: undefined,
       time: "",
+      reason: "",
+      attachmentUrl: null,
     },
   });
 
@@ -46,23 +46,22 @@ export function BookingForm({ doctor, bookedSlots }: BookingFormProps) {
 
   const onSubmit = async (values: BookingSchema) => {
     setLoading(true);
-
     try {
       const res = await createAppointmentAction(values);
 
       if (!res.status) {
         toast.error(res.message);
-
-        if (res.errors) {
-          res.errors.forEach((err: any) => {
-            form.setError(err.path[0], { message: err.message });
+        res.errors?.forEach((err) => {
+          form.setError(err.path[0] as keyof BookingSchema, {
+            message: err.message,
           });
-        }
-      } else {
-        toast.success("Booking Berhasil! Menunggu konfirmasi admin.");
-        router.push("/dashboard");
+        });
+        return;
       }
-    } catch (error) {
+
+      toast.success("Booking berhasil! Menunggu konfirmasi admin.");
+      router.push("/dashboard");
+    } catch {
       toast.error("Terjadi kesalahan sistem.");
     } finally {
       setLoading(false);
@@ -73,11 +72,13 @@ export function BookingForm({ doctor, bookedSlots }: BookingFormProps) {
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
       <FieldSet>
         <FieldGroup>
-          <CustomController control={form.control} fieldType={FieldType.DATE} name="date" label="Pilih Tanggal Konsultasi" />
+          <CustomController control={form.control} name="date" fieldType={FieldType.DATE} label="Pilih Tanggal Konsultasi" />
 
-          <CustomController control={form.control} fieldType={FieldType.SLOT} name="time" label={selectedDate ? "Pilih Jam Tersedia" : "Jadwal Dokter"} options={availableSlots} disabled={!selectedDate} />
+          <CustomController control={form.control} name="time" fieldType={FieldType.SLOT} label={selectedDate ? "Pilih Jam Tersedia" : "Jadwal Dokter"} options={availableSlots} disabled={!selectedDate} />
 
-          <CustomController control={form.control} fieldType={FieldType.TEXTAREA} name="reason" label="Keluhan" placeholder="Demam naik turun sejak 3 hari lalu..." />
+          <CustomController control={form.control} name="reason" fieldType={FieldType.TEXTAREA} label="Keluhan" placeholder="Demam naik turun sejak 3 hari lalu..." />
+
+          <CustomController control={form.control} name="attachmentUrl" fieldType={FieldType.FILE} label="Lampiran Dokumen (Opsional)" placeholder="Upload KTP atau Surat Rujukan" />
 
           <CustomButton type="submit" className="w-full" loading={loading}>
             Konfirmasi Booking

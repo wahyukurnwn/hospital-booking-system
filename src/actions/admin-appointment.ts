@@ -9,7 +9,7 @@ import { AppointmentEmail } from "@/components/emails/appointment-email";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { resend } from "@/lib/email";
-import createAuditLog from "@/lib/audtit";
+import createAuditLog from "@/lib/audit";
 
 export default async function updateAppointmentStatus(appointmentId: string, newStatus: AppointmentStatus, cancellationReason?: string) {
   const session = await auth();
